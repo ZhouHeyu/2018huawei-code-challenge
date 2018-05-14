@@ -44,6 +44,23 @@ void FindWorseBoxIndex(int *worse_box_index_arr,int num,int X_index);
 void SetPhysicalInfoArr(const limit_info *p,int size);
 void ComputeAllProfit(const pre_flavor_info out_flavor_info);
 void all_pop_list_init(pop_individual *p,int size);
+int Min3Num(int a,int b,int c);
+//设置回塞函数将箱子尽量塞满
+//arr_size == limit_type_num
+Result AddMoreBox(Result *r,pre_flavor_info out_flavor_info,int *Add_flovar_arr,int arr_size);
+
+int Min3Num(int a,int b,int c)
+{
+    int Min=a;
+    if(Min>b){
+        Min=b;
+    }
+    if(Min>c){
+        Min=c;
+    }
+    return Min;
+}
+
 /*********************************STL的操作*************************************************/
 typedef pair<int, double> PAIR;
 
@@ -59,7 +76,7 @@ struct CmpByValueAscend{
     }
 };
 /***********************************************************************************/
-//约束条件生成
+//约束条件生成，嵌入的是ｉ+1
 void SelectMustList()
 {
     for (int i = 0; i <limit_type_num ; ++i) {
@@ -899,6 +916,155 @@ double git_fit_value(pop_individual p)
     return temp_fit_value;
 }
 
+
+//设置回塞函数将箱子尽量塞满
+//arr_size == limit_type_num
+Result AddMoreBox(Result *r,pre_flavor_info out_flavor_info,int *Add_flovar_arr,int arr_size)
+{
+
+    memset(Add_flovar_arr,0,sizeof(int)*arr_size);
+    vector<int> G_play_type;
+    vector<int> H_play_type;
+    vector<int> L_play_type;
+    H_play_type.clear();
+    G_play_type.clear();
+    L_play_type.clear();
+    for (int i = 0; i <limit_type_num ; ++i) {
+        if(out_flavor_info.flavor_num[i]!=-1){
+            vector<int>::iterator L_iter;
+            L_iter=find(L_must_list.begin(),L_must_list.end(),i+1);
+            vector<int>::iterator H_iter;
+            H_iter=find(H_must_list.begin(),H_must_list.end(),i+1);
+//            针对非必须约束的机型，则Ｇ，Ｈ，Ｌ都可以进行放置
+            if(L_iter==L_must_list.end()&&H_iter==H_must_list.end()){
+                G_play_type.push_back(i+1);
+                H_play_type.push_back(i+1);
+                L_play_type.push_back(i+1);
+            }
+//            针对必须的机型只能放置到对应的Ｌ集合
+            if(L_iter!=L_must_list.end()){
+                L_play_type.push_back(i+1);
+            }
+//            针对必须的机型必须放置到对应的Ｈ集合
+            if(H_iter!=H_must_list.end()){
+                H_play_type.push_back(i+1);
+            }
+
+        }
+    }
+//    遍历对应的ｒ结果处理塞满的情况
+    int G_Num=(*r).G_Need_Num;
+    if(G_Num>0){
+        for (int count = 0; count < G_Num; ++count) {
+            int remain_cpu=Physical_Info_Arr[0].cpu_value;
+            int remain_mem=Physical_Info_Arr[0].mem_value;
+            for (int i = 0; i <limit_type_num ; ++i) {
+                int num=(*r).G_Need_list[count].contain_flavor_type_num[i];
+                if(num>0){
+                    remain_cpu-=num*cpu_consume[i];
+                    remain_mem-=num*mem_consume[i];
+                }
+            }
+//            如果一个资源放慢不需要执行遍历
+            if(remain_cpu<=0 || remain_mem<=0){
+                continue;
+            }
+
+            random_shuffle(G_play_type.begin(),G_play_type.end());
+            vector<int>::iterator G_iter;
+            for(G_iter=G_play_type.begin();G_iter!=G_play_type.end();G_iter++){
+                int play_flavor_type=*G_iter;
+                int cpu_limit_num=remain_cpu/cpu_consume[play_flavor_type-1];
+                int mem_limit_num=remain_mem/mem_consume[play_flavor_type-1];
+                int numb=Min3Num(cpu_limit_num,mem_limit_num,5);
+                if(numb<=0)
+                    continue;
+                remain_cpu-=numb*cpu_consume[play_flavor_type-1];
+                remain_mem-=numb*mem_consume[play_flavor_type-1];
+                (*r).G_Need_list[count].contain_flavor_type_num[play_flavor_type-1]=+numb;
+                Add_flovar_arr[play_flavor_type-1]+=numb;
+            }
+
+        }
+    }
+
+//  处理Ｌ
+    int L_Num=(*r).L_Need_Num;
+    if(L_Num>0){
+        for (int count = 0; count < L_Num; ++count) {
+            int remain_cpu=Physical_Info_Arr[1].cpu_value;
+            int remain_mem=Physical_Info_Arr[1].mem_value;
+            for (int i = 0; i <limit_type_num ; ++i) {
+                int num=(*r).L_Need_list[count].contain_flavor_type_num[i];
+                if(num>0){
+                    remain_cpu-=num*cpu_consume[i];
+                    remain_mem-=num*mem_consume[i];
+                }
+            }
+//            如果一个资源放慢不需要执行遍历
+            if(remain_cpu<=0 || remain_mem<=0){
+                continue;
+            }
+
+            random_shuffle(L_play_type.begin(),L_play_type.end());
+            vector<int>::iterator L_iter;
+            for(L_iter=L_play_type.begin();L_iter!=L_play_type.end();L_iter++){
+                int play_flavor_type=*L_iter;
+                int cpu_limit_num=remain_cpu/cpu_consume[play_flavor_type-1];
+                int mem_limit_num=remain_mem/mem_consume[play_flavor_type-1];
+                int numb=Min3Num(cpu_limit_num,mem_limit_num,5);
+                if(numb<=0)
+                    continue;
+                remain_cpu-=numb*cpu_consume[play_flavor_type-1];
+                remain_mem-=numb*mem_consume[play_flavor_type-1];
+                (*r).L_Need_list[count].contain_flavor_type_num[play_flavor_type-1]=+numb;
+                Add_flovar_arr[play_flavor_type-1]+=numb;
+            }
+
+        }
+
+    }
+//  处理Ｈ塞满
+    int H_Num=(*r).H_Need_Num;
+    if(H_Num>0){
+        for (int count = 0; count < H_Num; ++count) {
+            int remain_cpu=Physical_Info_Arr[2].cpu_value;
+            int remain_mem=Physical_Info_Arr[2].mem_value;
+            for (int i = 0; i <limit_type_num ; ++i) {
+                int num=(*r).H_Need_list[count].contain_flavor_type_num[i];
+                if(num>0){
+                    remain_cpu-=num*cpu_consume[i];
+                    remain_mem-=num*mem_consume[i];
+                }
+            }
+//            如果一个资源放慢不需要执行遍历
+            if(remain_cpu<=0 || remain_mem<=0){
+                continue;
+            }
+
+            random_shuffle(H_play_type.begin(),H_play_type.end());
+            vector<int>::iterator H_iter;
+            for(H_iter=H_play_type.begin();H_iter!=H_play_type.end();H_iter++){
+                int play_flavor_type=*H_iter;
+                int cpu_limit_num=remain_cpu/cpu_consume[play_flavor_type-1];
+                int mem_limit_num=remain_mem/mem_consume[play_flavor_type-1];
+                int numb=Min3Num(cpu_limit_num,mem_limit_num,5);
+                if(numb<=0)
+                    continue;
+                remain_cpu-=numb*cpu_consume[play_flavor_type-1];
+                remain_mem-=numb*mem_consume[play_flavor_type-1];
+                (*r).H_Need_list[count].contain_flavor_type_num[play_flavor_type-1]=+numb;
+                Add_flovar_arr[play_flavor_type-1]+=numb;
+            }
+
+        }
+
+    }
+
+
+    return (*r);
+}
+
 /************************遗传算法的主函数****************************/
 Result GAA_main(const pre_flavor_info flavor_info,const limit_info *physical_info,int physical_info_size ,const int size,const int max_iter,const double Cross_rate,
                 const double Varition_rate,const double C_ratio,const double D_ratio)
@@ -1012,10 +1178,12 @@ Result GAA_main(const pre_flavor_info flavor_info,const limit_info *physical_inf
     }
 
 
-
     /**************************结果输出解码****************************************/
     int best_answer_index=0;
     pop_individual best_divid=pop_list[best_answer_index];
+
+
+
 
     Result r;
 //    初始化对应的r结构体
@@ -1068,7 +1236,13 @@ Result GAA_main(const pre_flavor_info flavor_info,const limit_info *physical_inf
 
     double find_cost=best_divid.curr_cost;
     double score=(all_profit-find_cost*0.02)/all_profit;
-    cout<<"final best profit ratio is:"<<score<<endl;
+    cout<<"before change final best profit ratio is:"<<score<<endl;
+
+    //    这里针对ｒ设置塞满函数
+    int Add_flovar_Num[limit_type_num];
+    memset(Add_flovar_Num,0,sizeof(int)*limit_type_num);
+    AddMoreBox(&r,flavor_info,Add_flovar_Num,limit_type_num);
+
 
 //    free-memory
     end();
