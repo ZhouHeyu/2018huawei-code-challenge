@@ -156,6 +156,8 @@ void predict_server(char *info[MAX_INFO_NUM], int info_line_num,
         }
     }
 
+//    ????????????????????
+
 //    dump_history_to_file();
     char *result_file = (char *) "17\n\n0 8 0 20";
     write_result(result_file, filename);

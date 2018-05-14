@@ -1066,7 +1066,7 @@ Result AddMoreBox(Result *r,pre_flavor_info out_flavor_info,int *Add_flovar_arr,
 }
 
 /************************遗传算法的主函数****************************/
-Result GAA_main(const pre_flavor_info flavor_info,const limit_info *physical_info,int physical_info_size ,const int size,const int max_iter,const double Cross_rate,
+Result GAA_main(int *pre_flavor_arr,int pre_flavor_arr_size,const pre_flavor_info flavor_info,const limit_info *physical_info,int physical_info_size ,const int size,const int max_iter,const double Cross_rate,
                 const double Varition_rate,const double C_ratio,const double D_ratio)
 {
 //    根据外部输入的数据，进行设置
@@ -1242,7 +1242,13 @@ Result GAA_main(const pre_flavor_info flavor_info,const limit_info *physical_inf
     int Add_flovar_Num[limit_type_num];
     memset(Add_flovar_Num,0,sizeof(int)*limit_type_num);
     AddMoreBox(&r,flavor_info,Add_flovar_Num,limit_type_num);
+//    对预测的数据进行微调整
+    for (int k = 0; k <limit_type_num&&k<pre_flavor_arr_size ; ++k) {
+        if(Add_flovar_Num[k]>0){
+            pre_flavor_arr[k]+=Add_flovar_Num[k];
+        }
 
+    }
 
 //    free-memory
     end();

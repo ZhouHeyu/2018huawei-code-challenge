@@ -128,6 +128,6 @@ double git_fit_value(pop_individual p);
 //计算全局包含成本的销售额
 void ComputeAllProfit();
 //遗传算法的主函数
-Result GAA_main(const pre_flavor_info flavor_info,const limit_info *physical_info,const int physical_info_size,const int size,const int max_iter,const double Cross_rate,const double Varition_rate,const double C_ratio,const double D_ratio);
+Result GAA_main(int * pre_flavor_arr,int pre_arr_size,const pre_flavor_info flavor_info,const limit_info *physical_info,const int physical_info_size,const int size,const int max_iter,const double Cross_rate,const double Varition_rate,const double C_ratio,const double D_ratio);
 
 #endif //GGA_GGA_H
