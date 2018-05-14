@@ -11,6 +11,7 @@
 #include <vector>
 #include <map>
 #include "GGA.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -32,8 +33,9 @@ void dump_history_to_file();
 extern limit_info g_limit_infos[];//物理机信息
 extern vector<int> g_flavor_histories[];// 历史数据：　24*训练天数　的矩阵
 extern double g_flavor_prices[];// 虚拟机价格，-1代表无需预测
-extern time_t g_ori_time;//2010-01-01
+extern Date g_ori_date;//2010-01-01
 extern int g_pred_begin_day; //预测开始天
 extern int g_pred_end_day;//预测结束天
-
+extern int g_train_begin_day;
+extern int g_train_end_day;
 #endif //ECS_PREPROCESS_H

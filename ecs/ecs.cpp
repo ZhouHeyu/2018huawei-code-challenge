@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
         printf("Please input valid data file.\n");
         return -1;
     }
-	
+
     char *input_file = argv[2];
 
     info_line_num = read_file(info, MAX_INFO_NUM, input_file);
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
     char *output_file = argv[3];
 
-    predict_server(info, data, data_line_num, output_file);
+    predict_server(info, info_line_num, data, data_line_num, output_file);
 
     release_buff(info, info_line_num);
 	release_buff(data, data_line_num);
