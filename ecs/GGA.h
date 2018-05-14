@@ -20,6 +20,8 @@ using namespace std;
 const int limit_type_num=24;
 
 /*******************关键数据结构声明***********************************/
+
+//初始化时，cpu_value,mem_max为－１即为无效数据
 typedef struct limit_info{
     char pyhsical_Name;
     int cpu_value;
@@ -55,11 +57,13 @@ typedef struct pre_flavor_info{
     double flavor_cost[limit_type_num];
 }pre_flavor_info;
 
-//遗传算法返回的结构体
+//遗传算法返回的结构体, 如果contain_flavor_type_num[i]＜＝0,则不需要输出其值
 typedef struct result_physical_node{
     int contain_flavor_type_num[limit_type_num];
 }result_physical_node;
 
+
+//该结构体返回时，针对H_Need_Num =0 为异常值，则不要需要遍历H_Need_list
 typedef struct Result{
     int H_Need_Num;
     int L_Need_Num;
