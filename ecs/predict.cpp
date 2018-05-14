@@ -198,9 +198,28 @@ void predict_server(char *info[MAX_INFO_NUM], int info_line_num,
 //    ????????????????????
 
 //    dump_history_to_file();
-    Result result = {2, 0, 3};
-    result.H_Need_list[0].contain_flavor_type_num[0] = 1;
-    result.H_Need_list[0].contain_flavor_type_num[1] = 2;
-    result.H_Need_list[1].contain_flavor_type_num[1] = 3;
-    write_result(result, filename);
+//    Result result = {2, 0, 3};
+//    result.H_Need_list[0].contain_flavor_type_num[0] = 1;
+//    result.H_Need_list[0].contain_flavor_type_num[1] = 2;
+//    result.H_Need_list[1].contain_flavor_type_num[1] = 3;
+    Result r;
+    int pop_size=5;
+    int max_iter=3;
+    double cross_rate=0.7;
+    double varition_rate=0.1;
+    double C_rate=0.5;
+    double D_rate=0.2;
+    pre_flavor_info t_flavor_info;
+    for (int k = 0; k <24 ; ++k) {
+        if(g_flavor_prices[k]>0){
+            t_flavor_info.flavor_num[k]=pre_flavor_num[k];
+            t_flavor_info.flavor_cost[k]=g_flavor_prices[k];
+        }else{
+            t_flavor_info.flavor_cost[k]=-1.0;
+            t_flavor_info.flavor_num[k]=-1;
+        }
+    }
+
+    r=GAA_main(pre_flavor_num,24,t_flavor_info,g_limit_infos,3,pop_size,max_iter,cross_rate,varition_rate,C_rate,D_rate);
+    write_result(r, filename);
 }
