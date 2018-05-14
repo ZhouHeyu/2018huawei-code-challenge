@@ -79,18 +79,18 @@ int DelMaxOutliers(int *ori_data, int ori_data_length, double max_th, int min_va
 limit_info g_limit_infos[LIMIT_INFO_COUNT];//物理机信息
 vector<int> g_flavor_histories[MAX_FLAVOR_COUNT];// 历史数据：　24*训练天数　的矩阵
 double g_flavor_prices[MAX_FLAVOR_COUNT];// 虚拟机价格，-1代表无需预测
-time_t g_ori_time;//2010-01-01
+Date g_ori_date;//2010-01-01
 int g_pred_begin_day; //预测开始天
 int g_pred_end_day;//预测结束天
 int g_train_begin_day;
 int g_train_end_day;
+
 /////////初始化部分全局变量
 void init_global_vars() {
     for (int i = 0; i < LIMIT_INFO_COUNT; i++) {
         g_limit_infos[i].cpu_value = g_limit_infos[i].mem_value = -1;
     }
-    struct tm ori_tm = {0, 0, 0, 1, 1, 2010};
-    g_ori_time = mktime(&ori_tm);
+    g_ori_date = Date{2010, 1, 1};
     for (int i = 0; i < MAX_FLAVOR_COUNT; i++) {
         g_flavor_prices[i] = -1;
     }
@@ -110,10 +110,10 @@ int glh2index(char glh) {
 }
 
 /////////日期字符串转天数
-int get_days(const char *date) {
-    tm tm = {0};
-    sscanf(date, "%d-%d-%d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday);
-    return (int) difftime(mktime(&tm), g_ori_time) / (60 * 60 * 24);//TODO
+int get_days(const char *date_str) {
+    Date date = {0};
+    sscanf(date_str, "%d-%d-%d", &date.y, &date.m, &date.d);
+    return get_diff_days(date, g_ori_date);
 }
 
 /*
@@ -130,11 +130,16 @@ void parse_input(char **info, int info_line_num) {
         int index = glh2index(line[0]);
         assert(index >= 0);
         g_limit_infos[index].pyhsical_Name = line[0];
-        sscanf(line, "%*[a-zA-Z-] %d %d %*d %lf",
+        sscanf(line, "%*s %d %d %*d %lf",
                &g_limit_infos[index].cpu_value,
                &g_limit_infos[index].mem_value,
                &g_limit_infos[index].money);
-        g_limit_infos[index].money*=10000;
+        g_limit_infos[index].money *= 10000;
+//        printf("%d\t%d\t%d\t%lf\n",
+//               index,
+//               g_limit_infos[index].cpu_value,
+//               g_limit_infos[index].mem_value,
+//               g_limit_infos[index].money);
     }
     int flovors_count = atoi(info[input_limit_count + 2]);
     for (int i = input_limit_count + 3; i < input_limit_count + 3 + flovors_count; i++) {
@@ -146,7 +151,6 @@ void parse_input(char **info, int info_line_num) {
                &price);
         assert(flovor > 0);
         g_flavor_prices[flovor - 1] = price;
-        printf("flovor%d : %lf\n", flovor, price);
     }
     g_pred_begin_day = get_days(info[input_limit_count + 3 + flovors_count + 1]);
     g_pred_end_day = get_days(info[input_limit_count + 3 + flovors_count + 2]);
@@ -157,7 +161,6 @@ void parse_input(char **info, int info_line_num) {
  *  g_flavor_histories　: 24*训练天数　矩阵
 */
 void parse_data(char **data, int data_num) {
-
     char date_buf[16];
     char flavor_buf[8];
     sscanf(data[0], "%*s %*s %s", date_buf);
