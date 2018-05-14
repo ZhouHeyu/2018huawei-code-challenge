@@ -134,7 +134,7 @@ void predict_server(char *info[MAX_INFO_NUM], int info_line_num,
 
     for (int j = 0; j <24 ; ++j) {
         if(g_flavor_prices[j]>=0){
-            int pre_num=0;
+//            int pre_num=0;
             double *pre_data=(double*)malloc(sizeof(double)*pre_length);
             if(pre_data== nullptr){
                 fprintf(stderr,"malloc for pre data arr is failed\n");

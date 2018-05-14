@@ -553,7 +553,7 @@ void FindWorseBoxIndex(int *worse_box_index_arr,int num,int X_index)
     }
     vector<PAIR>Index_ave_profit_vec(ave_profit.begin(),ave_profit.end());
     sort(Index_ave_profit_vec.begin(),Index_ave_profit_vec.end(),CmpByValueDescend());
-    for(i =0; i<Index_ave_profit_vec.size() && i<num;i++){
+    for(i =0; i<(int)Index_ave_profit_vec.size() && i<num;i++){
         worse_box_index_arr[i]=Index_ave_profit_vec[i].first;
     }
     ave_profit.clear();
@@ -581,7 +581,7 @@ void FindBestBoxIndex(int *best_box_index_arr,int num,int X_index)
     }
     vector<PAIR> Index_ave_profit_vec(ave_profit.begin(),ave_profit.end());
     sort(Index_ave_profit_vec.begin(),Index_ave_profit_vec.end(),CmpByValueAscend());
-    for (i = 0; i <Index_ave_profit_vec.size() && i<num ; ++i) {
+    for (i = 0; i <(int)Index_ave_profit_vec.size() && i<num ; ++i) {
         best_box_index_arr[i]=Index_ave_profit_vec[i].first;
     }
     ave_profit.clear();
@@ -719,7 +719,7 @@ pop_individual MRM(int X_index,int Varition_num)
             }else{
 //                删除箱子
                 int m,n;
-                for (int m = 0,n=0; m <PHYSICAL_MAX_CONTAIN && n<pop_list[X_index].Physical_play_list[i].curr_contain_num ; ++m) {
+                for ( m = 0,n=0; m <PHYSICAL_MAX_CONTAIN && n<pop_list[X_index].Physical_play_list[i].curr_contain_num ; ++m) {
                     int temp_index=pop_list[X_index].Physical_play_list[i].contain_Template_Index[m];
                     if(temp_index!=-1){
                         n++;
@@ -1149,7 +1149,7 @@ Result GAA_main(int *pre_flavor_arr,int pre_flavor_arr_size,const pre_flavor_inf
 //        对父代和子代进行筛选,选择最优的前N个组成新的pop_list,最优的在前面;
         vector<PAIR> pop_index_and_cost_vec(pop_index_and_cost.begin(),pop_index_and_cost.end());
         sort(pop_index_and_cost_vec.begin(),pop_index_and_cost_vec.end(),CmpByValueAscend());
-        for ( i = 0; i < pop_index_and_cost_vec.size()&&i<size; ++i) {
+        for ( i = 0; i < (int)pop_index_and_cost_vec.size()&&i<size; ++i) {
             int temp_pop_index=pop_index_and_cost_vec[i].first;
             pop_list[i]=new_pop_list[temp_pop_index];
         }
