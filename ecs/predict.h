@@ -3,7 +3,7 @@
 
 #include "lib_io.h"
 
-void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int data_num, char * filename);
+void predict_server(char * info[MAX_INFO_NUM], int info_line,char * data[MAX_DATA_NUM], int data_num, char * filename);
 
 	
 

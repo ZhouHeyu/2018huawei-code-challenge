@@ -35,5 +35,6 @@ extern double g_flavor_prices[];// 虚拟机价格，-1代表无需预测
 extern time_t g_ori_time;//2010-01-01
 extern int g_pred_begin_day; //预测开始天
 extern int g_pred_end_day;//预测结束天
-
+extern int g_train_begin_day;
+extern int g_train_end_day;
 #endif //ECS_PREPROCESS_H

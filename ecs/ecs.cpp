@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
     char *output_file = argv[3];
 
-    predict_server(info, data, data_line_num, output_file);
+    predict_server(info, info_line_num,data, data_line_num, output_file);
 
     release_buff(info, info_line_num);
 	release_buff(data, data_line_num);

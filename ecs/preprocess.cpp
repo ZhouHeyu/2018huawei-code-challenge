@@ -82,7 +82,8 @@ double g_flavor_prices[MAX_FLAVOR_COUNT];// 虚拟机价格，-1代表无需预�
 time_t g_ori_time;//2010-01-01
 int g_pred_begin_day; //预测开始天
 int g_pred_end_day;//预测结束天
-
+int g_train_begin_day;
+int g_train_end_day;
 /////////初始化部分全局变量
 void init_global_vars() {
     for (int i = 0; i < LIMIT_INFO_COUNT; i++) {
@@ -129,10 +130,11 @@ void parse_input(char **info, int info_line_num) {
         int index = glh2index(line[0]);
         assert(index >= 0);
         g_limit_infos[index].pyhsical_Name = line[0];
-        sscanf(line, "%*[a-zA-Z] %d %d %*d %lf",
+        sscanf(line, "%*[a-zA-Z-] %d %d %*d %lf",
                &g_limit_infos[index].cpu_value,
                &g_limit_infos[index].mem_value,
                &g_limit_infos[index].money);
+        g_limit_infos[index].money*=10000;
     }
     int flovors_count = atoi(info[input_limit_count + 2]);
     for (int i = input_limit_count + 3; i < input_limit_count + 3 + flovors_count; i++) {
@@ -155,14 +157,14 @@ void parse_input(char **info, int info_line_num) {
  *  g_flavor_histories　: 24*训练天数　矩阵
 */
 void parse_data(char **data, int data_num) {
-    int days_begin, days_end;
+
     char date_buf[16];
     char flavor_buf[8];
     sscanf(data[0], "%*s %*s %s", date_buf);
-    days_begin = get_days(date_buf);
+    g_train_begin_day = get_days(date_buf);
     sscanf(data[data_num - 1], "%*s %*s %s", date_buf);
-    days_end = get_days(date_buf);
-    int days_gap = days_end - days_begin + 1;
+    g_train_end_day = get_days(date_buf);
+    int days_gap = g_train_end_day - g_train_begin_day + 1;
     assert(days_gap > 0);
     for (int i = 0; i < MAX_FLAVOR_COUNT; i++) {
         g_flavor_histories[i] = vector<int>((size_t) (days_gap), 0);
@@ -177,7 +179,7 @@ void parse_data(char **data, int data_num) {
         assert(flavor > 0);
         int days = get_days(date_buf);
         assert(days > 0);
-        g_flavor_histories[flavor - 1][days - days_begin]++;
+        g_flavor_histories[flavor - 1][days - g_train_begin_day]++;
     }
     int last_valid_column = 0;
     for (int j = 0; j < days_gap; j++) {
