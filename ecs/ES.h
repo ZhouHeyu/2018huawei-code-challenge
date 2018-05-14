@@ -10,7 +10,7 @@
 
 // 三次指数平滑的系数计算
 int ES_three(double *A,double *B,double *C,const int *ori_data,int ori_data_length,int init_num,double a);
-double *ES_predict(const int *ori_data,int ori_data_length,int T_diff,double *pre_data,int predict_len,double a=0.3);
+int ES_predict(const int *ori_data,int ori_data_length,int T_diff,double *pre_data,int predict_len,double a);
 
 
 

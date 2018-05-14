@@ -7,7 +7,7 @@
 #include <malloc.h>
 #include <string.h>
 
-int ES_three(double *A,double *B,double *C,const int *ori_data,int ori_data_length,int init_num=3,double a=0.5)
+int ES_three(double *A,double *B,double *C,const int *ori_data,int ori_data_length,int init_num,double a)
 {
 
 //    一次指数平滑计算S1
@@ -81,7 +81,7 @@ int ES_three(double *A,double *B,double *C,const int *ori_data,int ori_data_leng
 }
 
 //函数返回一个double指针
- double *ES_predict(const int *ori_data,int ori_data_length,int T_diff,double *pre_data,int predict_len,double a=0.3)
+int ES_predict(const int *ori_data,int ori_data_length,int T_diff,double *pre_data,int predict_len,double a)
  {
      double A=0.0,B=0.0,C=0.0;
      ES_three(&A,&B,&C,ori_data,ori_data_length,3,a);
@@ -91,5 +91,5 @@ int ES_three(double *A,double *B,double *C,const int *ori_data,int ori_data_leng
             double pre=A+B*(T+1)+C*pow((T+1),2);
             pre_data[i]=pre;
      }
-     return pre_data;
+     return 0;
  }
