@@ -276,7 +276,7 @@ void pop_individual_init(pop_individual *p)
     }
     (*p).curr_physical_num=0;
     (*p).curr_cost=0.0;
-    for (int j = 0; j < PHYSICAL_MAX_CONTAIN; ++j) {
+    for (int j = 0; j < MAX_PHYSICAL_NUM; ++j) {
         Physical_Node_Init(&(*p).Physical_play_list[j]);
     }
 
@@ -291,7 +291,7 @@ void all_pop_list_init(pop_individual *p,int size)
         for (int j = 0; j < 3; ++j) {
             p[i].group_count_list[j] = 0;
         }
-        for (int k = 0; k <PHYSICAL_MAX_CONTAIN ; ++k) {
+        for (int k = 0; k <MAX_PHYSICAL_NUM ; ++k) {
             Physical_Node_Init(&p[i].Physical_play_list[k]);
         }
 
@@ -315,7 +315,7 @@ void SetPhysicalInfoArr(const limit_info *p,int size)
             Physical_Info_Arr[1].money=(p+i)->money;
             select_list.push_back(1);
         }else if((p+i)->pyhsical_Name=='H'){
-            Physical_Info_Arr[2].pyhsical_Name='L';
+            Physical_Info_Arr[2].pyhsical_Name='H';
             Physical_Info_Arr[2].cpu_value=(p+i)->cpu_value;
             Physical_Info_Arr[2].mem_value=(p+i)->mem_value;
             Physical_Info_Arr[2].money=(p+i)->money;
