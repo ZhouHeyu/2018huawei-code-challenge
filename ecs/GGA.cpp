@@ -548,7 +548,9 @@ void FindWorseBoxIndex(int *worse_box_index_arr,int num,int X_index)
             j++;
             double ave_cpu_cost=Physical_money/use_cpu;
             double ave_mem_cost=Physical_money/use_mem;
-            ave_profit[i]=ave_cpu_cost;
+            int a=1;
+            int b=1-a;
+            ave_profit[i]=a*ave_cpu_cost+b*ave_mem_cost;
         }
     }
     vector<PAIR>Index_ave_profit_vec(ave_profit.begin(),ave_profit.end());
@@ -576,7 +578,9 @@ void FindBestBoxIndex(int *best_box_index_arr,int num,int X_index)
             j++;
             double ave_cpu_cost=Physical_money/use_cpu;
             double ave_mem_cost=Physical_money/use_mem;
-            ave_profit[i]=ave_cpu_cost;
+            int a=1;
+            int b=1-a;
+            ave_profit[i]=a*ave_cpu_cost+b*ave_mem_cost;
         }
     }
     vector<PAIR> Index_ave_profit_vec(ave_profit.begin(),ave_profit.end());
@@ -976,7 +980,7 @@ Result AddMoreBox(Result *r,pre_flavor_info out_flavor_info,int *Add_flovar_arr,
                 int play_flavor_type=*G_iter;
                 int cpu_limit_num=remain_cpu/cpu_consume[play_flavor_type-1];
                 int mem_limit_num=remain_mem/mem_consume[play_flavor_type-1];
-                int numb=Min3Num(cpu_limit_num,mem_limit_num,5);
+                int numb=Min3Num(cpu_limit_num,mem_limit_num,20);
                 if(numb<=0)
                     continue;
                 remain_cpu-=numb*cpu_consume[play_flavor_type-1];
@@ -1249,7 +1253,17 @@ Result GAA_main(int *pre_flavor_arr,int pre_flavor_arr_size,const pre_flavor_inf
         }
 
     }
+//    test print
 
+    for (int l = 0; l <limit_type_num &&l<pre_flavor_arr_size; ++l) {
+        if(Add_flovar_Num[l]>0){
+            all_profit+=Add_flovar_Num[l]*flavor_cost[l+1];
+        }
+    }
+    score=(all_profit-find_cost*0.02)/all_profit;
+
+
+    cout<<"after change final best profit ratio is:"<<score<<endl;
 //    free-memory
     end();
 

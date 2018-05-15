@@ -203,8 +203,8 @@ void predict_server(char *info[MAX_INFO_NUM], int info_line_num,
 //    result.H_Need_list[0].contain_flavor_type_num[1] = 2;
 //    result.H_Need_list[1].contain_flavor_type_num[1] = 3;
     Result r;
-    int pop_size=5;
-    int max_iter=3;
+    int pop_size=50;
+    int max_iter=30;
     double cross_rate=0.7;
     double varition_rate=0.1;
     double C_rate=0.5;
