@@ -190,7 +190,7 @@ void predict_server(char *info[MAX_INFO_NUM], int info_line_num,
             }else if(temp>0.5&&temp<1){
                 temp=1;
             }
-            pre_flavor_num[j]=(int)temp*1;
+            pre_flavor_num[j]=(int)temp;
         }
     }
 
@@ -223,8 +223,9 @@ void predict_server(char *info[MAX_INFO_NUM], int info_line_num,
             t_flavor_info.flavor_num[k]=-1;
         }
     }
-
+    TIME_IT("predict done");
     r=GAA_main(pre_flavor_num,24,t_flavor_info,g_limit_infos,3,pop_size,max_iter,cross_rate,varition_rate,C_rate,D_rate);
+    TIME_IT("gga done");
     write_result(r, filename);
-
+    TIME_IT("write done");
 }

@@ -2,6 +2,7 @@
 // Created by zj on 18-5-10.
 //
 #include "GGA.h"
+#include "utils.h"
 #include <iostream>
 using namespace std;
 /*********************全局变量申明**************************************/
@@ -157,10 +158,9 @@ void end()
 
 /***********************轮盘赌选择速**************************/
 //产生０－１的均匀分布的随机数
-double myrand()
+inline double myrand()
 {
-    double randnum=rand()/(RAND_MAX+1.0);
-    return randnum;
+    return rand()/(RAND_MAX+1.0);
 }
 //根据适应度函数重构对应的选择概率列表
 double *cumsum(const double *p_list,int size)
@@ -379,9 +379,8 @@ void SetTemplateAndFlavorCost(const pre_flavor_info out_flavor_info)
 
 /*******************遗传算法种群初始化**************/
 //初始化种群的采用的是ＦＦ算法
-pop_individual myffd(const int *a,int a_size)
+void myffd(pop_individual &ans,const int *a,int a_size)
 {
-    pop_individual ans;
 //    init pop_individual
     pop_individual_init(&ans);
 
@@ -512,7 +511,7 @@ pop_individual myffd(const int *a,int a_size)
 
 
     }
-    return ans;
+    return;
 }
 //初始化种群
 void POP_Init(int POP_size,const int *Template,int Template_size)
@@ -521,8 +520,7 @@ void POP_Init(int POP_size,const int *Template,int Template_size)
     if (pop_list != NULL) {
         all_pop_list_init(pop_list,POP_size);
         for (int i = 0; i < POP_size; ++i) {
-            pop_individual ans = myffd(Template,Template_size);
-            pop_list[i]=ans;
+            myffd(pop_list[i],Template,Template_size);
         }
     } else {
         fprintf(stderr, "malloc for pop_list is failed\n");
@@ -534,7 +532,7 @@ void POP_Init(int POP_size,const int *Template,int Template_size)
 
 void FindWorseBoxIndex(int *worse_box_index_arr,int num,int X_index)
 {
-    pop_individual temp=pop_list[X_index];
+    const pop_individual &temp=pop_list[X_index];
     int all_box_num=temp.curr_physical_num;
     map<int ,double> ave_profit;
     int i,j;
@@ -564,7 +562,7 @@ void FindWorseBoxIndex(int *worse_box_index_arr,int num,int X_index)
 
 void FindBestBoxIndex(int *best_box_index_arr,int num,int X_index)
 {
-    pop_individual temp=pop_list[X_index];
+    const pop_individual &temp=pop_list[X_index];
     int all_box_num=temp.curr_physical_num;
     map<int,double> ave_profit;
     int i,j;
@@ -595,9 +593,8 @@ void FindBestBoxIndex(int *best_box_index_arr,int num,int X_index)
 
 /********************遗传算法的交叉*********************/
 //交叉遗传ＭＲＣ
-pop_individual MRC(int X_index,int Y_index,int Cross_Num)
+void MRC(pop_individual &GA_X,int X_index,int Y_index,int Cross_Num)
 {
-    pop_individual GA_X;
 //    init GA_X
     pop_individual_init(&GA_X);
 //    find best box in X to remain
@@ -684,14 +681,13 @@ pop_individual MRC(int X_index,int Y_index,int Cross_Num)
     unique_list.clear();
     unplay_list.clear();
 
-    return GA_X;
+    return ;
 }
 
 /********************遗传算法的变异*********************/
 //选择变异函数MRM
-pop_individual MRM(int X_index,int Varition_num)
+void MRM(pop_individual &GA_X,int X_index,int Varition_num)
 {
-    pop_individual GA_X;
 //    init GA_X
     pop_individual_init(&GA_X);
 //    find worse box in X to replay
@@ -737,7 +733,7 @@ pop_individual MRM(int X_index,int Varition_num)
     supplement(&GA_X,unplay_list);
     unplay_list.clear();
 
-    return GA_X;
+    return ;
 }
 
 
@@ -888,7 +884,7 @@ void ComputeAllProfit(const pre_flavor_info out_flavor_info)
     }
 }
 
-double git_fit_value(pop_individual p)
+double git_fit_value(const pop_individual &p)
 {
     double temp_fit_value=0.0;
     int i,j;
@@ -1097,24 +1093,20 @@ Result GAA_main(int *pre_flavor_arr,int pre_flavor_arr_size,const pre_flavor_inf
 //    生成概率选择列表
     cumsum(fit_value_list,size);
 
+    int Cross_num=size*Cross_rate;
+    int Varition_num=size*Varition_rate;
+    int new_pop_size=size+Cross_num+Varition_num;
+    pop_individual *new_pop_list=(pop_individual *)malloc(sizeof(pop_individual)*(new_pop_size));
+    if(new_pop_list== NULL){
+        fprintf(stderr,"malloc for new_pop_list is failed\n");
+        exit(1);
+    }
 //  开始迭代循环
+    map<int,double> pop_index_and_cost;
+    TIME_IT("gga init done");
     for(curr_iter=0;curr_iter<max_iter;curr_iter++){
-
-        int Cross_num=size*Cross_rate;
-        int Varition_num=size*Varition_rate;
-
-        map<int,double> pop_index_and_cost;
         pop_index_and_cost.clear();
-
-        pop_individual *new_pop_list=(pop_individual *)malloc(sizeof(pop_individual)*(size+Cross_num+Varition_num));
-        if(new_pop_list== NULL){
-            fprintf(stderr,"malloc for new_pop_list is failed\n");
-            exit(1);
-        }
-        int new_pop_size=size+Cross_num+Varition_num;
-        all_pop_list_init(new_pop_list,new_pop_size);
-
-
+//        all_pop_list_init(new_pop_list,new_pop_size);
 //        保存父代信息
         int curr_new_pop_size=0;
         for(i=0;i<size;i++){
@@ -1132,9 +1124,8 @@ Result GAA_main(int *pre_flavor_arr,int pre_flavor_arr_size,const pre_flavor_inf
             if(cross_box_num<=0){
                 cross_box_num=1;
             }
-            pop_individual temp_divid=MRC(father_index,mother_index,cross_box_num);
-            new_pop_list[curr_new_pop_size]=temp_divid;
-            pop_index_and_cost[curr_new_pop_size]=temp_divid.curr_cost;
+            MRC(new_pop_list[curr_new_pop_size],father_index,mother_index,cross_box_num);
+            pop_index_and_cost[curr_new_pop_size]=new_pop_list[curr_new_pop_size].curr_cost;
             curr_new_pop_size++;
         }
 //        子代进行变异
@@ -1144,27 +1135,21 @@ Result GAA_main(int *pre_flavor_arr,int pre_flavor_arr_size,const pre_flavor_inf
             if(varition_box_num<=0){
                 varition_box_num=1;
             }
-            pop_individual temp_divid=MRM(father_index,varition_box_num);
-            new_pop_list[curr_new_pop_size]=temp_divid;
-            pop_index_and_cost[curr_new_pop_size]=temp_divid.curr_cost;
+            MRM(new_pop_list[curr_new_pop_size],father_index,varition_box_num);
+            pop_index_and_cost[curr_new_pop_size]=new_pop_list[curr_new_pop_size].curr_cost;
             curr_new_pop_size++;
         }
 //        对父代和子代进行筛选,选择最优的前N个组成新的pop_list,最优的在前面;
         vector<PAIR> pop_index_and_cost_vec(pop_index_and_cost.begin(),pop_index_and_cost.end());
         sort(pop_index_and_cost_vec.begin(),pop_index_and_cost_vec.end(),CmpByValueAscend());
         for ( i = 0; i < (int)pop_index_and_cost_vec.size()&&i<size; ++i) {
-            int temp_pop_index=pop_index_and_cost_vec[i].first;
-            pop_list[i]=new_pop_list[temp_pop_index];
+            pop_list[i]=new_pop_list[pop_index_and_cost_vec[i].first];
         }
-
-
 
 //       更新对应的适应度分配和概率选择possible_list
         //    计算个体的适应度值
         for ( i = 0; i <size ; ++i) {
-            double temp_fit_value=0.0;
-            temp_fit_value=git_fit_value(pop_list[i]);
-            fit_value_list[i]=temp_fit_value;
+            fit_value_list[i]=git_fit_value(pop_list[i]);
         }
         //    生成概率选择列表
         cumsum(fit_value_list,size);
@@ -1172,21 +1157,18 @@ Result GAA_main(int *pre_flavor_arr,int pre_flavor_arr_size,const pre_flavor_inf
 //        结尾统一释放归０
         pop_index_and_cost.clear();
         pop_index_and_cost_vec.clear();
-        if(new_pop_list!= NULL){
-            free(new_pop_list);
-        }
+
 
 //        test print
         cout<<"temp best profit ratio is"<<fit_value_list[0]<<endl;
     }
-
-
+    if(new_pop_list!= NULL){
+        free(new_pop_list);
+    }
+    TIME_IT("gga loop done");
     /**************************结果输出解码****************************************/
     int best_answer_index=0;
-    pop_individual best_divid=pop_list[best_answer_index];
-
-
-
+    const pop_individual &best_divid=pop_list[best_answer_index];
 
     Result r;
 //    初始化对应的r结构体

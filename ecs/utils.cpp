@@ -1,7 +1,3 @@
-//
-// Created by dgd on 18-5-14.
-//
-
 #include "utils.h"
 
 const int month_days[12] = {31, 28, 31, 30, 31, 30,
@@ -28,7 +24,19 @@ int get_diff_days(Date bigger, Date smaller) {
     n2 += count_leap_years(bigger);
     return (n2 - n1);
 }
-string trim_right(const string& str,const string &pattern)
-{
-  return str.substr(0,str.find_last_not_of(pattern) + 1);
+
+string trim_right(const string &str, const string &pattern) {
+    return str.substr(0, str.find_last_not_of(pattern) + 1);
 }
+
+#ifdef _DEBUG
+auto _timer = chrono::steady_clock::now();
+void time_it(const char *info) {
+    auto ms = (chrono::steady_clock::now() - _timer)/1000000 ;
+    _timer = chrono::steady_clock::now();
+    printf("\n\e[31m>>>>> [ %s ] : %ld <<<<<\e[0m\n", info, ms);
+}
+void time_clear(){
+    _timer = chrono::steady_clock::now();
+}
+#endif

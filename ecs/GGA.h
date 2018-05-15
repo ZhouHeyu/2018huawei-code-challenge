@@ -14,8 +14,8 @@
 #include <string.h>
 using namespace std;
 
-#define PHYSICAL_MAX_CONTAIN 100
-#define MAX_PHYSICAL_NUM 3000
+#define PHYSICAL_MAX_CONTAIN 200
+#define MAX_PHYSICAL_NUM 8000
 
 const int limit_type_num=24;
 
@@ -117,14 +117,14 @@ void InitPhysicalInfoArr();
 void SetTemplateAndFlavorCost();
 /*************************遗传算法的关键步骤****************************/
 //初始化种群的采用的是ＦＦ算法
-pop_individual myffd(const int *a,int a_size);
+void myffd(pop_individual&,const int *a,int a_size);
 void POP_Init(int POP_size,const int *Template,int Template_size);
 /*******************交叉步骤***************************/
-pop_individual MRC(int X_index,int Y_index,int Cross_Num);
+void MRC(pop_individual&,int X_index,int Y_index,int Cross_Num);
 /*******************变异步骤**************************/
-pop_individual MRM(int X_index,int Varition_num);
+void MRM(pop_individual&,int X_index,int Varition_num);
 /*******************适应度函数**************************/
-double git_fit_value(pop_individual p);
+double git_fit_value(const pop_individual &p);
 //计算全局包含成本的销售额
 void ComputeAllProfit();
 //遗传算法的主函数
