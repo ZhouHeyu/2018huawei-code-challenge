@@ -39,29 +39,24 @@ const int mem_consume[24]={1,2,4,2,4,8,4,8,16,8,16,32,16,32,64,32,64,128,8,16,32
 /**************************************************************************************/
 
 /**************************内部函数操作*****************************************************/
-void supplement(pop_individual *X, const set<int> &ori_unplay_list);
-
-void FindBestBoxIndex(int *worse_box_index_arr, int num, int X_index);
-
-void FindWorseBoxIndex(int *worse_box_index_arr, int num, int X_index);
-
-void SetPhysicalInfoArr(const limit_info *p, int size);
-
+void supplement(pop_individual *X,const set<int>&ori_unplay_list);
+void FindBestBoxIndex(int *worse_box_index_arr,int num,int X_index);
+void FindWorseBoxIndex(int *worse_box_index_arr,int num,int X_index);
+void SetPhysicalInfoArr(const limit_info *p,int size);
 void ComputeAllProfit(const pre_flavor_info out_flavor_info);
-
-int Min3Num(int a, int b, int c);
-
+int Min3Num(int a,int b,int c);
 //设置回塞函数将箱子尽量塞满
 //arr_size == limit_type_num
-Result AddMoreBox(Result *r, pre_flavor_info out_flavor_info, int *Add_flovar_arr, int arr_size);
+Result AddMoreBox(Result *r,pre_flavor_info out_flavor_info,int *Add_flovar_arr,int arr_size);
 
-int Min3Num(int a, int b, int c) {
-    int Min = a;
-    if (Min > b) {
-        Min = b;
+int Min3Num(int a,int b,int c)
+{
+    int Min=a;
+    if(Min>b){
+        Min=b;
     }
-    if (Min > c) {
-        Min = c;
+    if(Min>c){
+        Min=c;
     }
     return Min;
 }
@@ -69,33 +64,35 @@ int Min3Num(int a, int b, int c) {
 /*********************************STL的操作*************************************************/
 typedef pair<int, double> PAIR;
 
-struct CmpByValueDescend {
-    bool operator()(const PAIR &lhs, const PAIR &rhs) {
-        return lhs.second > rhs.second;
+struct CmpByValueDescend{
+    bool operator()(const PAIR &lhs,const PAIR &rhs){
+        return lhs.second>rhs.second;
     }
 };
 
-struct CmpByValueAscend {
-    bool operator()(const PAIR &lhs, const PAIR &rhs) {
-        return lhs.second < rhs.second;
+struct CmpByValueAscend{
+    bool operator()(const PAIR &lhs,const PAIR &rhs){
+        return lhs.second<rhs.second;
     }
 };
 /***********************************************************************************/
 //约束条件生成，嵌入的是ｉ+1
-void SelectMustList() {
-    for (int i = 0; i < limit_type_num; ++i) {
-        if (cpu_consume[i] >= 16 && cpu_consume[i] == mem_consume[i]) {
-            H_must_list.push_back(i + 1);
-        } else if (mem_consume[i] >= 32 && (mem_consume[i] / cpu_consume[i]) >= 4) {
-            L_must_list.push_back(i + 1);
+void SelectMustList()
+{
+    for (int i = 0; i <limit_type_num ; ++i) {
+        if(cpu_consume[i]>=16 && cpu_consume[i]==mem_consume[i]){
+            H_must_list.push_back(i+1);
+        }else if(mem_consume[i]>=32 &&(mem_consume[i]/cpu_consume[i])>=4){
+            L_must_list.push_back(i+1);
         }
     }
 }
 
 /**************************显示测试函数***************************/
-void testprint(int size) {
-    for (int i = 0; i < size; ++i) {
-        printf("possible_list[%d]:%6f\n", i, possbile_list[i]);
+void testprint(int size)
+{
+    for (int i = 0; i <size ; ++i) {
+        printf("possible_list[%d]:%6f\n",i,possbile_list[i]);
     }
 }
 /************************************************************/
@@ -113,20 +110,20 @@ void init(int size) {
         fprintf(stderr, "malloc for possbile_list is failed\n");
         exit(1);
     }
-    for (int i = 0; i < size; ++i) {
-        possbile_list[i] = 0.0;
+    for (int i = 0; i <size ; ++i) {
+        possbile_list[i]=0.0;
     }
 
-    fit_value_list = (double *) malloc(sizeof(double) * size);
-    if (fit_value_list == NULL) {
-        fprintf(stderr, "malloc for fit value list is failed\n");
+    fit_value_list=(double *)malloc(sizeof(double)*size);
+    if(fit_value_list==NULL){
+        fprintf(stderr,"malloc for fit value list is failed\n");
         exit(1);
     }
-    for (int j = 0; j < size; ++j) {
-        fit_value_list[j] = 0.0;
+    for (int j = 0; j <size ; ++j) {
+        fit_value_list[j]=0.0;
     }
 
-    pop_size = size;
+    pop_size=size;
 //    生成对应的约束条件
     SelectMustList();
 //     初始化对应的物理机结构数组
@@ -135,17 +132,18 @@ void init(int size) {
 }
 
 //总函数的释放函数
-void end() {
-    if (possbile_list != NULL) {
+void end()
+{
+    if(possbile_list!=NULL){
         free(possbile_list);
     }
-    if (fit_value_list != NULL) {
+    if(fit_value_list!=NULL){
         free(fit_value_list);
     }
-    if (pop_list != NULL) {
+    if(pop_list!=NULL){
         free(pop_list);
     }
-    if (Template != NULL) {
+    if(Template!= NULL){
         free(Template);
     }
     H_must_list.clear();
@@ -158,62 +156,64 @@ void end() {
 
 /***********************轮盘赌选择速**************************/
 //产生０－１的均匀分布的随机数
-inline double myrand() {
-    return rand() / (RAND_MAX + 1.0);
+inline double myrand()
+{
+    return rand()/(RAND_MAX+1.0);
 }
-
 //根据适应度函数重构对应的选择概率列表
-double *cumsum(const double *p_list, int size) {
+double *cumsum(const double *p_list,int size)
+{
 //    debug test
-    if (size != pop_size) {
-        fprintf(stderr, "size can not match!\n");
+    if(size!=pop_size){
+        fprintf(stderr,"size can not match!\n");
     }
 
-    double sum = 0.0;
+    double sum=0.0;
     for (int j = 0; j < size; ++j) {
-        sum += p_list[j];
+        sum+=p_list[j];
     }
 //    compute fit possible
-    double temp = 0.0;
-    for (int i = 0; i < size; ++i) {
-        double t = fit_value_list[i] / sum;
-        possbile_list[i] = temp;
-        temp += t;
+    double  temp=0.0;
+    for (int i = 0; i <size ; ++i) {
+        double t=fit_value_list[i]/sum;
+        possbile_list[i]=temp;
+        temp+=t;
     }
 
     return possbile_list;
 }
-
 //根据概率表，基于轮盘赌进行选择下标遗传
-int Select(int size) {
+int Select(int size)
+{
     int select_index;
-    double rand_num = myrand();
+    double rand_num=myrand();
 
 
-    int low = 0;
-    int high = size - 1;
-    int ans = (low + high) / 2;
+    int low=0;
+    int high=size-1;
+    int ans=(low+high)/2;
 
-    if (rand_num >= possbile_list[size - 1]) {
+    if(rand_num>=possbile_list[size-1]){
 
 ////        test print
 //        fprintf(stdout,"ceshi num is %lf\n",rand_num);
 //        fprintf(stdout,"ceshi index is %d\n",size-1);
 
-        return size - 1;
+        return size-1;
     }
 
 //    二分快速遍历
-    while ((high - low) > 1 && high > low) {
-        if (possbile_list[ans] < rand_num) {
-            low = ans;
-            ans = (low + high) / 2;
-        } else {
-            high = ans;
-            ans = (low + high) / 2;
+    while((high-low)>1 &&high>low){
+        if (possbile_list[ans]<rand_num)
+        {
+            low=ans;
+            ans=(low+high)/2;
+        }else{
+            high=ans;
+            ans=(low+high)/2;
         }
     }
-    select_index = low;
+    select_index=low;
 
 ////    test debug
 //    fprintf(stdout,"ceshi num is %lf\n",rand_num);
@@ -225,11 +225,12 @@ int Select(int size) {
 
 /**********************遍历函数*********************************/
 //找到数组位置上为－１的数组的空闲位置
-int find_free_pos(const int *a, int size) {
-    int index = -1;
-    for (int i = 0; i < size; ++i) {
-        if (a[i] == -1) {
-            index = i;
+int find_free_pos(const int *a,int size)
+{
+    int index=-1;
+    for (int i = 0; i <size ; ++i) {
+        if(a[i]==-1){
+            index=i;
             break;
         }
     }
@@ -237,11 +238,12 @@ int find_free_pos(const int *a, int size) {
 }
 
 //匹配对应的数组中存在的数据，不存在返回－１
-int find_value_in_arr(const int *a, int a_size, int value) {
-    int index = -1;
+int find_value_in_arr(const int* a,int a_size,int value)
+{
+    int index=-1;
     for (int i = 0; i < a_size; ++i) {
-        if (a[i] == value) {
-            index = i;
+        if(a[i]==value){
+            index=i;
             break;
         }
     }
@@ -251,20 +253,20 @@ int find_value_in_arr(const int *a, int a_size, int value) {
 /***********************************************************/
 
 /**********************结构体初始化*****************************/
-void Physical_Node_Init(Physical_Node *p) {
-    (*p).use_flag = 0;
-    (*p).curr_price = 0.0;
-    (*p).mem_max = 0;
-    (*p).remain_mem = 0;
-    (*p).cpu_max = 0;
-    (*p).remain_cpu = 0;
-    (*p).Physical_ID = -1;
-    (*p).curr_contain_num = 0;
-    memset((*p).contain_Template_Index, -1, sizeof(int) * PHYSICAL_MAX_CONTAIN);
+void Physical_Node_Init(Physical_Node *p)
+{
+    (*p).use_flag=0;
+    (*p).curr_price=0.0;
+    (*p).mem_max=0;
+    (*p).remain_mem=0;
+    (*p).cpu_max=0;
+    (*p).remain_cpu=0;
+    (*p).Physical_ID=-1;
+    (*p).curr_contain_num=0;
+    memset((*p).contain_Template_Index,-1, sizeof(int)*PHYSICAL_MAX_CONTAIN);
 
 }
 
-pop_individual empty_pop_individual = {};
 
 inline void pop_individual_init(pop_individual *p, bool reset_curr_physical_num) {
     for (int i = 0; i < 3; ++i) {
@@ -292,69 +294,73 @@ inline void pop_individual_init(pop_individual *p, bool reset_curr_physical_num)
 }
 
 
-void SetPhysicalInfoArr(const limit_info *p, int size) {
-    for (int i = 0; i < size; ++i) {
-        if ((p + i)->pyhsical_Name == 'G') {
-            Physical_Info_Arr[0].pyhsical_Name = 'G';
-            Physical_Info_Arr[0].cpu_value = (p + i)->cpu_value;
-            Physical_Info_Arr[0].mem_value = (p + i)->mem_value;
-            Physical_Info_Arr[0].money = (p + i)->money;
+void SetPhysicalInfoArr(const limit_info *p,int size)
+{
+    for (int i = 0; i <size ; ++i) {
+        if((p+i)->pyhsical_Name=='G'){
+            Physical_Info_Arr[0].pyhsical_Name='G';
+            Physical_Info_Arr[0].cpu_value=(p+i)->cpu_value;
+            Physical_Info_Arr[0].mem_value=(p+i)->mem_value;
+            Physical_Info_Arr[0].money=(p+i)->money;
             select_list.push_back(0);
-        } else if ((p + i)->pyhsical_Name == 'L') {
-            Physical_Info_Arr[1].pyhsical_Name = 'L';
-            Physical_Info_Arr[1].cpu_value = (p + i)->cpu_value;
-            Physical_Info_Arr[1].mem_value = (p + i)->mem_value;
-            Physical_Info_Arr[1].money = (p + i)->money;
+        }else if((p+i)->pyhsical_Name=='L'){
+            Physical_Info_Arr[1].pyhsical_Name='L';
+            Physical_Info_Arr[1].cpu_value=(p+i)->cpu_value;
+            Physical_Info_Arr[1].mem_value=(p+i)->mem_value;
+            Physical_Info_Arr[1].money=(p+i)->money;
             select_list.push_back(1);
-        } else if ((p + i)->pyhsical_Name == 'H') {
-            Physical_Info_Arr[2].pyhsical_Name = 'H';
-            Physical_Info_Arr[2].cpu_value = (p + i)->cpu_value;
-            Physical_Info_Arr[2].mem_value = (p + i)->mem_value;
-            Physical_Info_Arr[2].money = (p + i)->money;
+        }else if((p+i)->pyhsical_Name=='H'){
+            Physical_Info_Arr[2].pyhsical_Name='H';
+            Physical_Info_Arr[2].cpu_value=(p+i)->cpu_value;
+            Physical_Info_Arr[2].mem_value=(p+i)->mem_value;
+            Physical_Info_Arr[2].money=(p+i)->money;
             select_list.push_back(2);
-        } else {
-            fprintf(stderr, "set physical info arr error\n");
+        } else{
+            fprintf(stderr,"set physical info arr error\n");
             exit(1);
         }
     }
 }
 
 
-void InitPhysicalInfoArr() {
-    for (int i = 0; i < 3; ++i) {
-        Physical_Info_Arr[i].money = 0.0;
-        Physical_Info_Arr[i].mem_value = 0;
-        Physical_Info_Arr[i].cpu_value = 0;
-        Physical_Info_Arr[i].pyhsical_Name = 'X';
+
+void InitPhysicalInfoArr()
+{
+    for (int i = 0; i <3 ; ++i) {
+        Physical_Info_Arr[i].money=0.0;
+        Physical_Info_Arr[i].mem_value=0;
+        Physical_Info_Arr[i].cpu_value=0;
+        Physical_Info_Arr[i].pyhsical_Name='X';
     }
 }
 
 
 //根据外部参数out_flavor_info，设计对应的Template和对应的flavor_cost
-void SetTemplateAndFlavorCost(const pre_flavor_info out_flavor_info) {
-    int all_flavor_num = 0;
-    int i, j;
-    all_profit = 0.0;
-    for (i = 0; i < limit_type_num; ++i) {
-        if (out_flavor_info.flavor_num[i] != -1) {
-            all_flavor_num += out_flavor_info.flavor_num[i];
+void SetTemplateAndFlavorCost(const pre_flavor_info out_flavor_info)
+{
+    int all_flavor_num=0;
+    int i,j;
+    all_profit=0.0;
+    for( i = 0; i <limit_type_num ; ++i) {
+        if(out_flavor_info.flavor_num[i]!=-1){
+            all_flavor_num+=out_flavor_info.flavor_num[i];
 //            同时设置全局变量的map-->flavor_cost
-            flavor_cost[i + 1] = out_flavor_info.flavor_cost[i];
-            all_profit += out_flavor_info.flavor_num[i] * out_flavor_info.flavor_cost[i];
+            flavor_cost[i+1]=out_flavor_info.flavor_cost[i];
+            all_profit+=out_flavor_info.flavor_num[i]*out_flavor_info.flavor_cost[i];
         }
     }
-    Template_size = all_flavor_num;
-    Template = (int *) malloc(sizeof(int) * all_flavor_num);
-    if (Template == NULL) {
-        fprintf(stderr, "malloc for Template is failed\n");
+    Template_size=all_flavor_num;
+    Template=(int *)malloc(sizeof(int)*all_flavor_num);
+    if(Template== NULL){
+        fprintf(stderr,"malloc for Template is failed\n");
         exit(1);
     }
 
-    int offset = 0;
-    for (i = 0; i < limit_type_num; ++i) {
-        int flavor_type = i + 1;
-        for (j = 0; j < out_flavor_info.flavor_num[i]; ++j) {
-            Template[offset] = flavor_type;
+    int offset=0;
+    for ( i = 0; i <limit_type_num; ++i) {
+        int flavor_type=i+1;
+        for ( j = 0; j < out_flavor_info.flavor_num[i]; ++j) {
+            Template[offset]=flavor_type;
             Template_index_list.push_back(offset);
             offset++;
         }
@@ -368,13 +374,14 @@ void SetTemplateAndFlavorCost(const pre_flavor_info out_flavor_info) {
 
 /*******************遗传算法种群初始化**************/
 //初始化种群的采用的是ＦＦ算法
-void myffd(pop_individual &ans, const int *a, int a_size) {
+void myffd(pop_individual &ans,const int *a,int a_size)
+{
 //    init pop_individual
     pop_individual_init(&ans, false);
 
-    int All_Count = 0;
+    int All_Count=0;
 //   shuffle index
-    random_shuffle(Template_index_list.begin(), Template_index_list.end());
+    random_shuffle(Template_index_list.begin(),Template_index_list.end());
     vector<int>::iterator it;
     for (it = Template_index_list.begin(); it != Template_index_list.end(); it++) {
         int Template_index = *it;
@@ -526,59 +533,61 @@ void POP_Init(int POP_size, const int *Template, int Template_size) {
 
 /***********************************************************/
 
-void FindWorseBoxIndex(int *worse_box_index_arr, int num, int X_index) {
-    const pop_individual &temp = pop_list[X_index];
-    int all_box_num = temp.curr_physical_num;
-    map<int, double> ave_profit;
-    int i, j;
-    for (i = 0, j = 0; i < MAX_PHYSICAL_NUM && j < all_box_num; ++i) {
-        Physical_Node t_node = temp.Physical_play_list[i];
-        if (t_node.use_flag == 1) {
-            int Physical_ID = t_node.Physical_ID;
-            int use_cpu = t_node.cpu_max - t_node.remain_cpu;
-            int use_mem = t_node.mem_max - t_node.remain_mem;
-            double Physical_money = Physical_Info_Arr[Physical_ID].money;
+void FindWorseBoxIndex(int *worse_box_index_arr,int num,int X_index)
+{
+    const pop_individual &temp=pop_list[X_index];
+    int all_box_num=temp.curr_physical_num;
+    map<int ,double> ave_profit;
+    int i,j;
+    for ( i = 0,j = 0; i <MAX_PHYSICAL_NUM && j<all_box_num; ++i) {
+        Physical_Node t_node=temp.Physical_play_list[i];
+        if(t_node.use_flag==1){
+            int Physical_ID=t_node.Physical_ID;
+            int use_cpu=t_node.cpu_max-t_node.remain_cpu;
+            int use_mem=t_node.mem_max-t_node.remain_mem;
+            double Physical_money=Physical_Info_Arr[Physical_ID].money;
             j++;
-            double ave_cpu_cost = Physical_money / use_cpu;
-            double ave_mem_cost = Physical_money / use_mem;
-            int a = 1;
-            int b = 1 - a;
-            ave_profit[i] = a * ave_cpu_cost + b * ave_mem_cost;
+            double ave_cpu_cost=Physical_money/use_cpu;
+            double ave_mem_cost=Physical_money/use_mem;
+            int a=1;
+            int b=1-a;
+            ave_profit[i]=a*ave_cpu_cost+b*ave_mem_cost;
         }
     }
-    vector<PAIR> Index_ave_profit_vec(ave_profit.begin(), ave_profit.end());
-    sort(Index_ave_profit_vec.begin(), Index_ave_profit_vec.end(), CmpByValueDescend());
-    for (i = 0; i < (int) Index_ave_profit_vec.size() && i < num; i++) {
-        worse_box_index_arr[i] = Index_ave_profit_vec[i].first;
+    vector<PAIR>Index_ave_profit_vec(ave_profit.begin(),ave_profit.end());
+    sort(Index_ave_profit_vec.begin(),Index_ave_profit_vec.end(),CmpByValueDescend());
+    for(i =0; i<(int)Index_ave_profit_vec.size() && i<num;i++){
+        worse_box_index_arr[i]=Index_ave_profit_vec[i].first;
     }
     ave_profit.clear();
     Index_ave_profit_vec.clear();
 }
 
-void FindBestBoxIndex(int *best_box_index_arr, int num, int X_index) {
-    const pop_individual &temp = pop_list[X_index];
-    int all_box_num = temp.curr_physical_num;
-    map<int, double> ave_profit;
-    int i, j;
-    for (i = 0, j = 0; i < MAX_PHYSICAL_NUM && j < all_box_num; ++i) {
-        Physical_Node t_node = temp.Physical_play_list[i];
-        if (t_node.use_flag == 1) {
-            int Physical_ID = t_node.Physical_ID;
-            int use_cpu = t_node.cpu_max - t_node.remain_cpu;
-            int use_mem = t_node.mem_max - t_node.remain_mem;
-            double Physical_money = Physical_Info_Arr[Physical_ID].money;
+void FindBestBoxIndex(int *best_box_index_arr,int num,int X_index)
+{
+    const pop_individual &temp=pop_list[X_index];
+    int all_box_num=temp.curr_physical_num;
+    map<int,double> ave_profit;
+    int i,j;
+    for ( i = 0,j=0; i <MAX_PHYSICAL_NUM &&j<all_box_num; ++i) {
+        Physical_Node t_node=temp.Physical_play_list[i];
+        if(t_node.use_flag==1){
+            int Physical_ID=t_node.Physical_ID;
+            int use_cpu=t_node.cpu_max-t_node.remain_cpu;
+            int use_mem=t_node.mem_max-t_node.remain_mem;
+            double Physical_money=Physical_Info_Arr[Physical_ID].money;
             j++;
-            double ave_cpu_cost = Physical_money / use_cpu;
-            double ave_mem_cost = Physical_money / use_mem;
-            int a = 1;
-            int b = 1 - a;
-            ave_profit[i] = a * ave_cpu_cost + b * ave_mem_cost;
+            double ave_cpu_cost=Physical_money/use_cpu;
+            double ave_mem_cost=Physical_money/use_mem;
+            int a=1;
+            int b=1-a;
+            ave_profit[i]=a*ave_cpu_cost+b*ave_mem_cost;
         }
     }
-    vector<PAIR> Index_ave_profit_vec(ave_profit.begin(), ave_profit.end());
-    sort(Index_ave_profit_vec.begin(), Index_ave_profit_vec.end(), CmpByValueAscend());
-    for (i = 0; i < (int) Index_ave_profit_vec.size() && i < num; ++i) {
-        best_box_index_arr[i] = Index_ave_profit_vec[i].first;
+    vector<PAIR> Index_ave_profit_vec(ave_profit.begin(),ave_profit.end());
+    sort(Index_ave_profit_vec.begin(),Index_ave_profit_vec.end(),CmpByValueAscend());
+    for (i = 0; i <(int)Index_ave_profit_vec.size() && i<num ; ++i) {
+        best_box_index_arr[i]=Index_ave_profit_vec[i].first;
     }
     ave_profit.clear();
     Index_ave_profit_vec.clear();
@@ -647,8 +656,8 @@ void MRC(pop_individual &GA_X, int X_index, int Y_index, int Cross_Num) {
                     if ((unique_list.find(temp_Template_index)) != unique_list.end()) {
 //                        if ((iter = find(unique_list.begin(), unique_list.end(), temp_Template_index)) !=unique_list.end()) {
 //                        表示出现重复的索引标，该箱子需要重新放置
-                        play_flag = 1;
-                    } else {
+                        play_flag=1;
+                    }else{
 //                        非重复的索引放置
                         temp_list.insert(temp_Template_index);
                     }
@@ -678,13 +687,13 @@ void MRC(pop_individual &GA_X, int X_index, int Y_index, int Cross_Num) {
     }
 
 //        这里插入回填算法设置
-    supplement(&GA_X, unplay_list);
+    supplement(&GA_X,unplay_list);
 
 
     unique_list.clear();
     unplay_list.clear();
 
-    return;
+    return ;
 }
 
 /********************遗传算法的变异*********************/
@@ -880,19 +889,21 @@ void supplement(pop_individual *X, const set<int> &ori_unplay_list) {
 }
 
 /********************遗传算法的适应度函数**************************/
-void ComputeAllProfit(const pre_flavor_info out_flavor_info) {
-    all_profit = 0.0;
-    for (int i = 0; i < limit_type_num; ++i) {
-        if (out_flavor_info.flavor_num[i] != -1) {
-            all_profit += out_flavor_info.flavor_num[i] * out_flavor_info.flavor_cost[i];
+void ComputeAllProfit(const pre_flavor_info out_flavor_info)
+{
+    all_profit=0.0;
+    for (int i = 0; i <limit_type_num ; ++i) {
+        if(out_flavor_info.flavor_num[i]!=-1){
+            all_profit+=out_flavor_info.flavor_num[i]*out_flavor_info.flavor_cost[i];
         }
     }
 }
 
-double git_fit_value(const pop_individual &p) {
-    double temp_fit_value = 0.0;
-    int i, j;
-    double All_Physical_cost = 0.0;
+double git_fit_value(const pop_individual &p)
+{
+    double temp_fit_value=0.0;
+    int i,j;
+    double All_Physical_cost=0.0;
 
 ////    method1
 //    for ( i = 0 ,j=0; i <MAX_PHYSICAL_NUM &&j<p.curr_physical_num; ++i) {
@@ -1076,79 +1087,74 @@ Result GAA_main(int *pre_flavor_arr, int pre_flavor_arr_size, const pre_flavor_i
 //    根据外部输入的数据，进行设置
 
 
-    for (int j = 0; j < MAX_PHYSICAL_NUM; ++j) {
-        Physical_Node_Init(&(empty_pop_individual.Physical_play_list[j]));
-    }
-
     int curr_iter;
-    int i, j, m, n;
+    int i,j,m,n;
     init(size);
 
 //    根据外部的out_flavor_info 设置Template ,flavor_cost
     SetTemplateAndFlavorCost(flavor_info);
     //    设置物理机的参数
-    SetPhysicalInfoArr(physical_info, physical_info_size);
+    SetPhysicalInfoArr(physical_info,physical_info_size);
 
 
 //    初始化种群
-    POP_Init(size, Template, Template_size);
+    POP_Init(size,Template,Template_size);
 //    计算个体的适应度值
-    for (int i = 0; i < size; ++i) {
-        double temp_fit_value = 0.0;
-        temp_fit_value = git_fit_value(pop_list[i]);
-        fit_value_list[i] = temp_fit_value;
+    for (int i = 0; i <size ; ++i) {
+        double temp_fit_value=0.0;
+        temp_fit_value=git_fit_value(pop_list[i]);
+        fit_value_list[i]=temp_fit_value;
     }
 //    生成概率选择列表
-    cumsum(fit_value_list, size);
+    cumsum(fit_value_list,size);
 
-    int Cross_num = size * Cross_rate;
-    int Varition_num = size * Varition_rate;
-    int new_pop_size = size + Cross_num + Varition_num;
-    pop_individual *new_pop_list = (pop_individual *) malloc(sizeof(pop_individual) * (new_pop_size));
-    if (new_pop_list == NULL) {
-        fprintf(stderr, "malloc for new_pop_list is failed\n");
+    int Cross_num=size*Cross_rate;
+    int Varition_num=size*Varition_rate;
+    int new_pop_size=size+Cross_num+Varition_num;
+    pop_individual *new_pop_list=(pop_individual *)malloc(sizeof(pop_individual)*(new_pop_size));
+    if(new_pop_list== NULL){
+        fprintf(stderr,"malloc for new_pop_list is failed\n");
         exit(1);
     }
     for (int j = 0; j < new_pop_size; ++j) {
         pop_individual_init(new_pop_list + j, true);
     }
 //  开始迭代循环
-    map<int, double> pop_index_and_cost;
+    map<int,double> pop_index_and_cost;
     TIME_IT("gga init done");
-    for (curr_iter = 0; curr_iter < max_iter; curr_iter++) {
+    for(curr_iter=0;curr_iter<max_iter;curr_iter++){
         pop_index_and_cost.clear();
-//        all_pop_list_init(new_pop_list,new_pop_size);
 //        保存父代信息
-        int curr_new_pop_size = 0;
-        for (i = 0; i < size; i++) {
-            new_pop_list[curr_new_pop_size] = pop_list[i];
-            pop_index_and_cost[curr_new_pop_size] = pop_list[i].curr_cost;
+        int curr_new_pop_size=0;
+        for(i=0;i<size;i++){
+            new_pop_list[curr_new_pop_size]=pop_list[i];
+            pop_index_and_cost[curr_new_pop_size]=pop_list[i].curr_cost;
             curr_new_pop_size++;
         }
 
 
 //        子代进行交叉
-        for (i = 0; i < Cross_num; ++i) {
-            int father_index = Select(size);
-            int mother_index = Select(size);
-            int cross_box_num = pop_list[father_index].curr_physical_num * C_ratio;
-            if (cross_box_num <= 0) {
-                cross_box_num = 1;
+        for ( i = 0; i <Cross_num ; ++i) {
+            int father_index=Select(size);
+            int mother_index=Select(size);
+            int cross_box_num=pop_list[father_index].curr_physical_num*C_ratio;
+            if(cross_box_num<=0){
+                cross_box_num=1;
             }
-            MRC(new_pop_list[curr_new_pop_size], father_index, mother_index, cross_box_num);
-            pop_index_and_cost[curr_new_pop_size] = new_pop_list[curr_new_pop_size].curr_cost;
+            MRC(new_pop_list[curr_new_pop_size],father_index,mother_index,cross_box_num);
+            pop_index_and_cost[curr_new_pop_size]=new_pop_list[curr_new_pop_size].curr_cost;
             curr_new_pop_size++;
         }
 
 //        子代进行变异
-        for (i = 0; i < Varition_num; ++i) {
-            int father_index = Select(size);
-            int varition_box_num = pop_list[father_index].curr_physical_num * D_ratio;
-            if (varition_box_num <= 0) {
-                varition_box_num = 1;
+        for ( i = 0; i <Varition_num ; ++i) {
+            int father_index=Select(size);
+            int varition_box_num=pop_list[father_index].curr_physical_num*D_ratio;
+            if(varition_box_num<=0){
+                varition_box_num=1;
             }
-            MRM(new_pop_list[curr_new_pop_size], father_index, varition_box_num);
-            pop_index_and_cost[curr_new_pop_size] = new_pop_list[curr_new_pop_size].curr_cost;
+            MRM(new_pop_list[curr_new_pop_size],father_index,varition_box_num);
+            pop_index_and_cost[curr_new_pop_size]=new_pop_list[curr_new_pop_size].curr_cost;
             curr_new_pop_size++;
         }
 
@@ -1162,34 +1168,35 @@ Result GAA_main(int *pre_flavor_arr, int pre_flavor_arr_size, const pre_flavor_i
 
 //       更新对应的适应度分配和概率选择possible_list
         //    计算个体的适应度值
-        for (i = 0; i < size; ++i) {
-            fit_value_list[i] = git_fit_value(pop_list[i]);
+        for ( i = 0; i <size ; ++i) {
+            fit_value_list[i]=git_fit_value(pop_list[i]);
         }
         //    生成概率选择列表
-        cumsum(fit_value_list, size);
+        cumsum(fit_value_list,size);
 
 //        结尾统一释放归０
         pop_index_and_cost.clear();
         pop_index_and_cost_vec.clear();
 
+
 //        test print
-        cout << "temp best profit ratio is" << fit_value_list[0] << endl;
+        cout<<"temp best profit ratio is"<<fit_value_list[0]<<endl;
     }
-    if (new_pop_list != NULL) {
+    if(new_pop_list!= NULL){
         free(new_pop_list);
     }
     /**************************结果输出解码****************************************/
-    int best_answer_index = 0;
-    const pop_individual &best_divid = pop_list[best_answer_index];
+    int best_answer_index=0;
+    const pop_individual &best_divid=pop_list[best_answer_index];
 
     Result r;
 //    初始化对应的r结构体
-    r.G_Need_Num = 0;
-    r.H_Need_Num = 0;
-    r.L_Need_Num = 0;
-    memset(r.G_Need_list, 0, sizeof(result_physical_node) * MAX_PHYSICAL_NUM);
-    memset(r.H_Need_list, 0, sizeof(result_physical_node) * MAX_PHYSICAL_NUM);
-    memset(r.L_Need_list, 0, sizeof(result_physical_node) * MAX_PHYSICAL_NUM);
+    r.G_Need_Num=0;
+    r.H_Need_Num=0;
+    r.L_Need_Num=0;
+    memset(r.G_Need_list,0,sizeof(result_physical_node)*MAX_PHYSICAL_NUM);
+    memset(r.H_Need_list,0,sizeof(result_physical_node)*MAX_PHYSICAL_NUM);
+    memset(r.L_Need_list,0,sizeof(result_physical_node)*MAX_PHYSICAL_NUM);
 
 //   根据最优的解转化为对应的输出解
     r.G_Need_Num = best_divid.group_count_list[0];
@@ -1231,9 +1238,9 @@ Result GAA_main(int *pre_flavor_arr, int pre_flavor_arr_size, const pre_flavor_i
 
     //    test print;
 
-    double find_cost = best_divid.curr_cost;
-    double score = (all_profit - find_cost * 0.02) / all_profit;
-    cout << "before change final best profit ratio is:" << score << endl;
+    double find_cost=best_divid.curr_cost;
+    double score=(all_profit-find_cost*0.02)/all_profit;
+    cout<<"before change final best profit ratio is:"<<score<<endl;
 
 //    //    这里针对ｒ设置塞满函数
 //    int Add_flovar_Num[limit_type_num];
