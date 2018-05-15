@@ -208,7 +208,7 @@ void predict_server(char *info[MAX_INFO_NUM], int info_line_num,
 
     Result r;
     int pop_size=30;
-    int max_iter=30;
+    int max_iter=10;
     double cross_rate=0.7;
     double varition_rate=0.1;
     double C_rate=0.5;

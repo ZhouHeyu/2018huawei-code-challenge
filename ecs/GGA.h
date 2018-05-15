@@ -108,7 +108,7 @@ void testprint(int size);
 /*************************结构体初始化函数**************************/
 //初始化结构体的函数
 void Physical_Node_Init(Physical_Node *p);
-void pop_individual_init(pop_individual *p);
+void pop_individual_init(pop_individual *p,bool);
 //在外部读取前,初始化对应的全局变量out_flavor_info
 void InitOutFlavorInfo();
 //在外部读取前,初始化对应的全局变量数组Physical_Info_Arr[3];
