@@ -28,3 +28,7 @@ int get_diff_days(Date bigger, Date smaller) {
     n2 += count_leap_years(bigger);
     return (n2 - n1);
 }
+string trim_right(const string& str,const string &pattern)
+{
+  return str.substr(0,str.find_last_not_of(pattern) + 1);
+}

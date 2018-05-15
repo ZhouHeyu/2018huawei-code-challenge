@@ -45,7 +45,7 @@ void write_result(Result result, const char *const fname) {
     _write_phy_result(output, "General", result.G_Need_Num, result.G_Need_list);
     _write_phy_result(output, "Large-Memory", result.L_Need_Num, result.L_Need_list);
     _write_phy_result(output, "High-Performance", result.H_Need_Num, result.H_Need_list);
-    write_result(output.str().data(), fname);
+    write_result(trim_right(output.str(),"\n").data(), fname);
 }
 
 void predict_server(char *info[MAX_INFO_NUM], int info_line_num,
