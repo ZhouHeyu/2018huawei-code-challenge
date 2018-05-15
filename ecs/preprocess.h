@@ -28,7 +28,7 @@ void parse_input(char **info, int info_line_num);
 void init_global_vars();
 
 void dump_history_to_file();
-
+void free_train_data();
 ////////全局变量
 extern limit_info g_limit_infos[];//物理机信息
 extern vector<int> g_flavor_histories[];// 历史数据：　24*训练天数　的矩阵

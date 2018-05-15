@@ -1080,7 +1080,6 @@ Result GAA_main(int *pre_flavor_arr,int pre_flavor_arr_size,const pre_flavor_inf
     int i,j,m,n;
     init(size);
 
-    InitPhysicalInfoArr();
 //    根据外部的out_flavor_info 设置Template ,flavor_cost
     SetTemplateAndFlavorCost(flavor_info);
     //    设置物理机的参数

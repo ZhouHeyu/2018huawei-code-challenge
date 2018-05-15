@@ -57,14 +57,16 @@ int read_file(char ** const buff, const unsigned int spec, const char * const fi
 
     char line[MAX_LINE_LEN + 2];
     unsigned int cnt = 0;
+    size_t line_length;
     while ((cnt < spec) && !feof(fp))
     {
         line[0] = 0;
         if (fgets(line, MAX_LINE_LEN + 2, fp) == NULL)  continue;
         if (line[0] == 0)   continue;
-        buff[cnt] = (char *)malloc(MAX_LINE_LEN + 2);
-        strncpy(buff[cnt], line, MAX_LINE_LEN + 2 - 1);
-        buff[cnt][MAX_LINE_LEN + 1] = 0;
+        line_length=strlen(line);
+        buff[cnt] = (char *)malloc(line_length+2 + 2);
+        strncpy(buff[cnt], line, line_length+2 + 2 - 1);
+        buff[cnt][line_length+2 + 1] = 0;
         cnt++;
     }
     fclose(fp);

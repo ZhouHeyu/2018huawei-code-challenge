@@ -39,7 +39,6 @@ int main(int argc, char *argv[])
     predict_server(info, info_line_num, data, data_line_num, output_file);
 
     release_buff(info, info_line_num);
-	release_buff(data, data_line_num);
 
     print_time("End");
 

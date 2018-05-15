@@ -1,8 +1,8 @@
 #ifndef __LIB_IO_H__
 #define __LIB_IO_H__
 
-#define MAX_INFO_NUM    50
-#define MAX_DATA_NUM    50000
+#define MAX_INFO_NUM    100
+#define MAX_DATA_NUM    100000
 
 //读取文件并按行输出到buff。
 //buff为一个指针数组，每一个元素是一个字符指针，对应文件中一行的内容。

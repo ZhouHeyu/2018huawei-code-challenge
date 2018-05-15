@@ -14,8 +14,8 @@
 #include <string.h>
 using namespace std;
 
-#define PHYSICAL_MAX_CONTAIN 500
-#define MAX_PHYSICAL_NUM 1000
+#define PHYSICAL_MAX_CONTAIN 100
+#define MAX_PHYSICAL_NUM 3000
 
 const int limit_type_num=24;
 

@@ -70,6 +70,9 @@ int DelMaxOutliers(int *ori_data, int ori_data_length, double max_th, int min_va
         int del_index = to_del[k];
         ori_data[del_index] = max_value;
     }
+    if(to_del!= nullptr){
+        free(to_del);
+    }
 
     return 0;
 
@@ -196,6 +199,11 @@ void parse_data(char **data, int data_num) {
             g_flavor_histories[i][j] = g_flavor_histories[i][last_valid_column];
         }
     }
+    for (int i = 0; i < data_num; i++){
+        if(data[i]!=NULL) {
+            free(data[i]);
+        }
+    }
 }
 
 //DEBUG
@@ -212,4 +220,10 @@ void dump_history_to_file() {
         output_stream << '\n';
     }
     output_stream.close();
+}
+void free_train_data(){
+    for (int i = 0; i < MAX_FLAVOR_COUNT; ++i) {
+        g_flavor_histories[i].clear();
+        vector<int>().swap(g_flavor_histories[i]);
+    }
 }

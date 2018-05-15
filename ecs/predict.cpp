@@ -54,15 +54,15 @@ void predict_server(char *info[MAX_INFO_NUM], int info_line_num,
     init_global_vars();
     parse_input(info, info_line_num);
     parse_data(data, data_num);
-//    ?????????
     for (int i = 0; i <24 ; ++i) {
         DelMaxOutliers(g_flavor_histories[i].data(),g_flavor_histories[i].size(),10.0,4);
     }
-//    ????????
     memset(pre_flavor_num,-1, sizeof(int)*24);
     int pre_length=g_pred_end_day-g_pred_begin_day+1;
     int day_interval=g_pred_begin_day-g_train_end_day+1;
-/**********************?????????******************************************/
+
+
+
     double cc[24];
     if(pre_length<=13){
         cc[0] = 0.85;
@@ -116,7 +116,7 @@ void predict_server(char *info[MAX_INFO_NUM], int info_line_num,
         cc[23] = 1.0;
     }
 
-/**********************?????******************************************/
+
     double a[24];
     a[0]=0.028;
     a[1]= 0.03;
@@ -142,7 +142,7 @@ void predict_server(char *info[MAX_INFO_NUM], int info_line_num,
     a[21]=0.03;
     a[22]=0.03;
     a[23]=0.03;
-/**********************????b??******************************************/
+
     double bb[24];
     bb[0]=0;
     bb[1]=0;
@@ -169,7 +169,6 @@ void predict_server(char *info[MAX_INFO_NUM], int info_line_num,
     bb[22]=0;
     bb[23]=0;
 
-/************************??????*************************************/
 
     for (int j = 0; j <24 ; ++j) {
         if(g_flavor_prices[j]>=0){
@@ -191,19 +190,24 @@ void predict_server(char *info[MAX_INFO_NUM], int info_line_num,
             }else if(temp>0.5&&temp<1){
                 temp=1;
             }
-            pre_flavor_num[j]=(int)temp;
+            pre_flavor_num[j]=(int)temp*1;
         }
     }
 
+    free_train_data();
+
+//    Result r = {2, 0, 3};
+//    r.H_Need_list[0].contain_flavor_type_num[0] = 1;
+//    r.H_Need_list[0].contain_flavor_type_num[1] = 2;
+//    r.H_Need_list[1].contain_flavor_type_num[1] = 3;
+//    write_result(r, filename);
+//
+//    return ;
+
 //    ????????????????????
 
-//    dump_history_to_file();
-//    Result result = {2, 0, 3};
-//    result.H_Need_list[0].contain_flavor_type_num[0] = 1;
-//    result.H_Need_list[0].contain_flavor_type_num[1] = 2;
-//    result.H_Need_list[1].contain_flavor_type_num[1] = 3;
     Result r;
-    int pop_size=50;
+    int pop_size=30;
     int max_iter=30;
     double cross_rate=0.7;
     double varition_rate=0.1;
@@ -222,4 +226,5 @@ void predict_server(char *info[MAX_INFO_NUM], int info_line_num,
 
     r=GAA_main(pre_flavor_num,24,t_flavor_info,g_limit_infos,3,pop_size,max_iter,cross_rate,varition_rate,C_rate,D_rate);
     write_result(r, filename);
+
 }
