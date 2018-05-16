@@ -547,15 +547,26 @@ void FindWorseBoxIndex(int *worse_box_index_arr,int num,int X_index)
             int use_mem=t_node.mem_max-t_node.remain_mem;
             double Physical_money=Physical_Info_Arr[Physical_ID].money;
             j++;
-            double ave_cpu_cost=Physical_money/use_cpu;
-            double ave_mem_cost=Physical_money/use_mem;
-            int a=1;
-            int b=1-a;
-            ave_profit[i]=a*ave_cpu_cost+b*ave_mem_cost;
+//            以cpu和mem的单位价格最低最优为选择标准
+//            double ave_cpu_cost=Physical_money/use_cpu;
+//            double ave_mem_cost=Physical_money/use_mem;
+//            int a=1;
+//            int b=1-a;
+//            ave_profit[i]=a*ave_cpu_cost+b*ave_mem_cost;
+//            以单位箱子的相对利润率为选择成本，注意修改后面的Index_ave_profit＿vec的排序
+            double curr_profit_ratio=(t_node.curr_price-Physical_money*0.02)/t_node.curr_price;
+            if(curr_profit_ratio<0){
+                ave_profit[i]=0.0;
+            } else{
+                ave_profit[i]=curr_profit_ratio;
+            }
         }
     }
     vector<PAIR>Index_ave_profit_vec(ave_profit.begin(),ave_profit.end());
-    sort(Index_ave_profit_vec.begin(),Index_ave_profit_vec.end(),CmpByValueDescend());
+//    按成本最低选择
+//    sort(Index_ave_profit_vec.begin(),Index_ave_profit_vec.end(),CmpByValueDescend());
+//    按相对利润率选择
+    sort(Index_ave_profit_vec.begin(),Index_ave_profit_vec.end(),CmpByValueAscend());
     for(i =0; i<(int)Index_ave_profit_vec.size() && i<num;i++){
         worse_box_index_arr[i]=Index_ave_profit_vec[i].first;
     }
@@ -577,15 +588,26 @@ void FindBestBoxIndex(int *best_box_index_arr,int num,int X_index)
             int use_mem=t_node.mem_max-t_node.remain_mem;
             double Physical_money=Physical_Info_Arr[Physical_ID].money;
             j++;
-            double ave_cpu_cost=Physical_money/use_cpu;
-            double ave_mem_cost=Physical_money/use_mem;
-            int a=1;
-            int b=1-a;
-            ave_profit[i]=a*ave_cpu_cost+b*ave_mem_cost;
+//            以cpu和mem的单位价格最低最优为选择标准
+//            double ave_cpu_cost=Physical_money/use_cpu;
+//            double ave_mem_cost=Physical_money/use_mem;
+//            int a=1;
+//            int b=1-a;
+//            ave_profit[i]=a*ave_cpu_cost+b*ave_mem_cost;
+//            以单位箱子的相对利润率为选择成本，注意修改后面的Index_ave_profit＿vec的排序
+            double curr_profit_ratio=(t_node.curr_price-Physical_money*0.02)/t_node.curr_price;
+            if(curr_profit_ratio<0){
+                ave_profit[i]=0.0;
+            } else{
+                ave_profit[i]=curr_profit_ratio;
+            }
         }
     }
     vector<PAIR> Index_ave_profit_vec(ave_profit.begin(),ave_profit.end());
-    sort(Index_ave_profit_vec.begin(),Index_ave_profit_vec.end(),CmpByValueAscend());
+//    以cpu的价格成本价格最低
+//    sort(Index_ave_profit_vec.begin(),Index_ave_profit_vec.end(),CmpByValueAscend());
+//    以相对的利润率为选择标准排序
+    sort(Index_ave_profit_vec.begin(),Index_ave_profit_vec.end(),CmpByValueDescend());
     for (i = 0; i <(int)Index_ave_profit_vec.size() && i<num ; ++i) {
         best_box_index_arr[i]=Index_ave_profit_vec[i].first;
     }
@@ -944,7 +966,7 @@ Result AddMoreBox(Result *r, pre_flavor_info out_flavor_info, int *Add_flovar_ar
     G_play_type.clear();
     L_play_type.clear();
     for (int i = 0; i < limit_type_num; ++i) {
-        if (out_flavor_info.flavor_num[i] != -1) {
+        if (out_flavor_info.flavor_cost[i] > 0) {
             vector<int>::iterator L_iter;
             L_iter = find(L_must_list.begin(), L_must_list.end(), i + 1);
             vector<int>::iterator H_iter;
@@ -995,7 +1017,7 @@ Result AddMoreBox(Result *r, pre_flavor_info out_flavor_info, int *Add_flovar_ar
                     continue;
                 remain_cpu -= numb * cpu_consume[play_flavor_type - 1];
                 remain_mem -= numb * mem_consume[play_flavor_type - 1];
-                (*r).G_Need_list[count].contain_flavor_type_num[play_flavor_type - 1] = +numb;
+                (*r).G_Need_list[count].contain_flavor_type_num[play_flavor_type - 1] +=numb;
                 Add_flovar_arr[play_flavor_type - 1] += numb;
             }
 
@@ -1031,7 +1053,7 @@ Result AddMoreBox(Result *r, pre_flavor_info out_flavor_info, int *Add_flovar_ar
                     continue;
                 remain_cpu -= numb * cpu_consume[play_flavor_type - 1];
                 remain_mem -= numb * mem_consume[play_flavor_type - 1];
-                (*r).L_Need_list[count].contain_flavor_type_num[play_flavor_type - 1] = +numb;
+                (*r).L_Need_list[count].contain_flavor_type_num[play_flavor_type - 1] +=numb;
                 Add_flovar_arr[play_flavor_type - 1] += numb;
             }
 
@@ -1067,7 +1089,7 @@ Result AddMoreBox(Result *r, pre_flavor_info out_flavor_info, int *Add_flovar_ar
                     continue;
                 remain_cpu -= numb * cpu_consume[play_flavor_type - 1];
                 remain_mem -= numb * mem_consume[play_flavor_type - 1];
-                (*r).H_Need_list[count].contain_flavor_type_num[play_flavor_type - 1] = +numb;
+                (*r).H_Need_list[count].contain_flavor_type_num[play_flavor_type - 1] +=numb;
                 Add_flovar_arr[play_flavor_type - 1] += numb;
             }
 
@@ -1242,29 +1264,31 @@ Result GAA_main(int *pre_flavor_arr, int pre_flavor_arr_size, const pre_flavor_i
     double score=(all_profit-find_cost*0.02)/all_profit;
     cout<<"before change final best profit ratio is:"<<score<<endl;
 
-//    //    这里针对ｒ设置塞满函数
-//    int Add_flovar_Num[limit_type_num];
-//    memset(Add_flovar_Num, 0, sizeof(int) * limit_type_num);
-//    AddMoreBox(&r, flavor_info, Add_flovar_Num, limit_type_num);
-////    对预测的数据进行微调整
-//    for (int k = 0; k < limit_type_num && k < pre_flavor_arr_size; ++k) {
-//        if (Add_flovar_Num[k] > 0) {
-//            pre_flavor_arr[k] += Add_flovar_Num[k];
-//        }
-//
-//    }
-////    test print
-//
-//    for (int l = 0; l < limit_type_num && l < pre_flavor_arr_size; ++l) {
-//        if (Add_flovar_Num[l] > 0) {
-//            all_profit += Add_flovar_Num[l] * flavor_cost[l + 1];
-//        }
-//    }
-//    score = (all_profit - find_cost * 0.02) / all_profit;
-//
-//
-//    cout << "after change final best profit ratio is:" << score << endl;
-////    free-memory
+    //    这里针对ｒ设置塞满函数
+    int Add_flovar_Num[limit_type_num];
+    memset(Add_flovar_Num, 0, sizeof(int) * limit_type_num);
+    AddMoreBox(&r, flavor_info, Add_flovar_Num, limit_type_num);
+//    对预测的数据进行微调整
+    for (int k = 0; k < limit_type_num && k < pre_flavor_arr_size; ++k) {
+        if (Add_flovar_Num[k] > 0) {
+            pre_flavor_arr[k] += Add_flovar_Num[k];
+        }
+
+    }
+//    test print
+
+    for (int l = 0; l < limit_type_num && l < pre_flavor_arr_size; ++l) {
+        if (Add_flovar_Num[l] > 0) {
+            all_profit += Add_flovar_Num[l] * flavor_cost[l + 1];
+        }
+    }
+    score = (all_profit - find_cost * 0.02) / all_profit;
+
+
+    cout << "after change final best profit ratio is:" << score << endl;
+
+
+    //    free-memory
     end();
 
 
