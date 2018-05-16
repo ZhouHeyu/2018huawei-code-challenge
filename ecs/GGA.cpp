@@ -1108,7 +1108,6 @@ Result GAA_main(int *pre_flavor_arr, int pre_flavor_arr_size, const pre_flavor_i
                 const double Varition_rate, const double C_ratio, const double D_ratio) {
 //    根据外部输入的数据，进行设置
 
-
     int curr_iter;
     int i,j,m,n;
     init(size);
